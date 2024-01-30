@@ -69,10 +69,12 @@ contract SpiritSwapDCA {
 		_executeOrder(user, id);
 	}
 
+	//Add getOrdersCountActive (not deleted) ?
 	function getOrdersCount(address user) public view returns (uint256) {
 		return ordersByAddress[user].length;
 	}
 
+	//Minimum period ?
 	function createOrder(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');

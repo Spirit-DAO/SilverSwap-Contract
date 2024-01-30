@@ -13,7 +13,7 @@ import snapshotGasCost from './shared/snapshotGasCost';
 
 type TestERC20WithAddress = TestERC20 & { address: string };
 
-describe('QuoterV2', function () {
+describe('SpiritDCA', function () {
   this.timeout(40000);
   let wallet: Wallet;
   let trader: Wallet;
@@ -58,7 +58,7 @@ describe('QuoterV2', function () {
     [wallet, trader] = wallets;
   });
 
-  describe('position', () => {
+  describe('Orders', () => {
     const subFixture = async () => {
       ({ tokens, nft, quoter, dca } = await swapRouterFixture());
       await createPool(nft, wallet, tokens[0].address, tokens[1].address);
@@ -77,26 +77,91 @@ describe('QuoterV2', function () {
     });
 
     describe('#createOrder', () => {
-      it('10 tokens with avaible balances', async () => {
-		const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000);
+		it('period is 0', async () => {
+			await expect(dca.createOrder(tokens[0].address, tokens[1].address, 10000, 20000, 0)).to.be.revertedWith('Period must be greater than 0.');
+		});
 
-		const balanceBefore0 = await tokens[0].balanceOf(wallet.address);
-		const balanceBefore1 = await tokens[1].balanceOf(wallet.address);
+		it('amountIn is 0', async () => {
+			await expect(dca.createOrder(tokens[0].address, tokens[1].address, 0, 20000, 360)).to.be.revertedWith('AmountIn must be greater than 0.');
+		});
 
-		await tokens[0].approve(await dca.getAddress(), MaxUint256)
-		await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
-		
-		const balanceAfter0 = await tokens[0].balanceOf(wallet.address);
-		const balanceAfter1 = await tokens[1].balanceOf(wallet.address);
-		
-		expect (balanceBefore0 - balanceAfter0).to.be.eq(10000);
-		expect (balanceAfter1 - balanceBefore1).to.be.eq(amountOut);
-      });
+		it('tokenIn & tokenOut are same', async () => {
+			await expect(dca.createOrder(tokens[0].address, tokens[0].address, 10000, 20000, 360)).to.be.revertedWith('TokenIn must be different than TokenOut.');
+		});
 
-	  it('OutMin is not respected', async () => {
-		await tokens[0].approve(await dca.getAddress(), MaxUint256)
-		await expect(dca.createOrder(tokens[0].address, tokens[1].address, 10000, 20000, 86400*7)).to.be.revertedWith('Too little received');
-      });
+		//'tokenIn is null'
+
+		it('10 tokens with avaible balances', async () => {
+			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000);
+
+			const balanceBefore0 = await tokens[0].balanceOf(wallet.address);
+			const balanceBefore1 = await tokens[1].balanceOf(wallet.address);
+
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+			
+			const balanceAfter0 = await tokens[0].balanceOf(wallet.address);
+			const balanceAfter1 = await tokens[1].balanceOf(wallet.address);
+			
+			expect (balanceBefore0 - balanceAfter0).to.be.eq(10000);
+			expect (balanceAfter1 - balanceBefore1).to.be.eq(amountOut);
+		});
+
+		it('outMin is not respected', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await expect(dca.createOrder(tokens[0].address, tokens[1].address, 10000, 20000, 86400*7)).to.be.revertedWith('Too little received');
+		});
+    });
+
+	describe('#getOrdersCount', () => {
+		it('Order creation + getOrdersCount', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			const count = await dca.getOrdersCount(wallet.address);
+
+			await expect(count).to.be.eq(1);
+		});
+	});
+	
+	describe('#editOrder', () => {
+		it('Try to edit an order', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await expect((await dca.ordersByAddress(wallet.address, 0)).amountIn).to.be.equal(10000);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).amountOutMin).to.be.equal(0);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).period).to.be.equal(86400*7);
+
+			await dca.editOrder(0, 20000, 100, 86400*30);
+
+			await expect((await dca.ordersByAddress(wallet.address, 0)).amountIn).to.be.equal(20000);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).amountOutMin).to.be.equal(100);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).period).to.be.equal(86400*30);
+		});
+
+		it('Edit an order with invalid ID', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await expect(dca.editOrder(16, 20000, 100, 86400*30)).to.be.revertedWith('Order does not exist.');
+		});
+
+		it('Edit an deleted order', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await dca.deleteOrder(0);
+			await expect(dca.editOrder(0, 20000, 100, 86400*30)).to.be.revertedWith('Order is deleted.');
+		});
+
+		it('Edit an order with invalid period', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await expect(dca.editOrder(0, 20000, 100, 0)).to.be.revertedWith('Period must be greater than 0.');
+		});
+
     });
   });
 });
