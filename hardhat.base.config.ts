@@ -1,6 +1,6 @@
 const path = require('path');
 const config = require('dotenv').config({ path: path.resolve(__dirname, '.env') });
-const { ETHERSCAN_API_KEY, BSCSCAN_API_KEY, POLYGONSCAN_API_KEY, MNEMONIC, DEPLOY_GAS_LIMIT_MAX, DEPLOY_GAS_PRICE, INFURA_ID_PROJECT } =
+const { FTMSCAN_API_KEY, PRIVATE_KEY, INFURA_ID_PROJECT } =
   config.parsed || {};
 
 export default {
@@ -21,11 +21,21 @@ export default {
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${INFURA_ID_PROJECT}`,
-    },
+	},
+	sonic: {
+		url: "https://rpc.sonic.fantom.network/",
+		chainId: 64165,
+		accounts: [PRIVATE_KEY],
+	},
+	ftmtest: {
+		url: "https://rpc.testnet.fantom.network/",
+		chainId: 4002,
+		accounts: [PRIVATE_KEY],
+	},
     ropsten: {
       url: `https://ropsten.infura.io/v3/${INFURA_ID_PROJECT}`,
       chainId: 3,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${INFURA_ID_PROJECT}`,
@@ -36,13 +46,13 @@ export default {
     kovan: {
       url: `https://kovan.infura.io/v3/${INFURA_ID_PROJECT}`,
       chainId: 42,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
       gasPrice: 8000000000,
     },
     bscTestnet: {
       url: `https://data-seed-prebsc-2-s3.binance.org:8545`,
       chainId: 97,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     bsc: {
       url: `https://bsc-dataseed3.binance.org`,
@@ -50,17 +60,17 @@ export default {
     mumbai: {
       url: `https://polygon-mumbai-bor.publicnode.com`,
       chainId: 80001,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     mantleTestnet: {
       url: `https://rpc.testnet.mantle.xyz`,
       chainId: 5001,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     mantle: {
       url: `https://rpc.mantle.xyz`,
       chainId: 5000,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     seiTestnet: {
       url: `https://evm-rpc.arctic-1.seinetwork.io`,
@@ -80,7 +90,7 @@ export default {
     telosTestnet: {
       url: `https://testnet.telos.net/evm`,
       chainId: 41,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     beraTestnet: {
       url: `https://artio.rpc.berachain.com/`,
@@ -90,19 +100,22 @@ export default {
     maticMainnet: {
       url: `https://rpc-mainnet.matic.quiknode.pro`,
       chainId: 137,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
       gasPrice: 50_000_000_000,
     },
     artheraTestnet: {
       url: `https://rpc-test.arthera.net`,
       chainId: 10243,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
   },
   etherscan: {
     // Your API key for Etherscan
     // Obtain one at https://etherscan.io/
-    apiKey: `${POLYGONSCAN_API_KEY}`,
+  	apiKey: {
+		opera: FTMSCAN_API_KEY,
+		ftmTestnet: FTMSCAN_API_KEY,
+  	},
     customChains: [
       {
         network: 'seiTestnet',

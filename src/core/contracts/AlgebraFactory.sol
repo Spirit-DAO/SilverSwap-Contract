@@ -86,6 +86,11 @@ contract AlgebraFactory is IAlgebraFactory, Ownable2Step, AccessControlEnumerabl
     pool = address(uint160(uint256(keccak256(abi.encodePacked(hex'ff', poolDeployer, keccak256(abi.encode(token0, token1)), POOL_INIT_CODE_HASH)))));
   }
 
+  function getPair(address tokenA, address tokenB) external view returns (address pair) {
+	(address token0, address token1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);
+	return poolByPair[token0][token1];
+  }
+
   /// @inheritdoc IAlgebraFactory
   function createPool(address tokenA, address tokenB) external override returns (address pool) {
     require(tokenA != tokenB);

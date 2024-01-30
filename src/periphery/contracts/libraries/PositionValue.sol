@@ -64,6 +64,20 @@ library PositionValue {
         return _principal(sqrtRatioX96, tickLower, tickUpper, liquidity);
     }
 
+    function _principalPublic(
+        uint160 sqrtRatioX96,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    ) internal pure returns (uint256 amount0, uint256 amount1) {
+        return _principal(
+            sqrtRatioX96,
+            tickLower,
+            tickUpper,
+            liquidity
+        );
+    }
+
     /// @notice Calculates the total fees owed to the token owner
     /// @param positionManager The Algebra NonfungiblePositionManager
     /// @param tokenId The tokenId of the token for which to get the total fees owed

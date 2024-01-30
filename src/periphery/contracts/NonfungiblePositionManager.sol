@@ -18,6 +18,7 @@ import './base/ERC721Permit.sol';
 import './base/PeripheryValidation.sol';
 import './base/SelfPermit.sol';
 import './base/PoolInitializer.sol';
+import './libraries/LiquidityAmounts.sol';
 
 /// @title Algebra Integral 1.0 NFT positions
 /// @notice Wraps Algebra positions in the ERC721 non-fungible token interface
@@ -125,8 +126,8 @@ contract NonfungiblePositionManager is
         liquidity = position.liquidity;
         require(poolId != 0, 'Invalid token ID');
         PoolAddress.PoolKey storage poolKey = _poolIdToPoolKey[poolId];
-        return (
-            position.nonce,
+
+        return (position.nonce,
             position.operator,
             poolKey.token0,
             poolKey.token1,
@@ -136,7 +137,48 @@ contract NonfungiblePositionManager is
             position.feeGrowthInside0LastX128,
             position.feeGrowthInside1LastX128,
             position.tokensOwed0,
-            position.tokensOwed1
+            position.tokensOwed1);
+    }
+    
+    function positionsLiquidiity(
+        uint256 tokenId
+    )
+        external
+        view
+        returns (
+            address token0,
+            address token1,
+            uint256 amount0,
+            uint256 amount1
+        )
+    {
+        Position storage position = _positions[tokenId];
+        // single SLOAD
+        uint80 poolId = position.poolId;
+        int24 tickLower = position.tickLower;
+        int24 tickUpper = position.tickUpper;
+        uint128 liquidity = position.liquidity;
+        
+        require(poolId != 0, 'Invalid token ID');
+        PoolAddress.PoolKey storage poolKey = _poolIdToPoolKey[poolId];
+
+        uint160 sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(tickLower);
+        uint160 sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(tickUpper);
+
+        IAlgebraPool pool = IAlgebraPool(_getPoolById(position.poolId));
+        (uint160 sqrtRatioX96,,,,,,) = pool.safelyGetStateOfAMM();
+
+        (uint256 _amount0, uint256 _amount1) = LiquidityAmounts.getAmountsForLiquidity(
+            sqrtRatioX96,
+            sqrtRatioAX96,
+            sqrtRatioBX96,
+            liquidity
+        );
+        return (
+            poolKey.token0,
+            poolKey.token1,
+            _amount0,
+            _amount1
         );
     }
 

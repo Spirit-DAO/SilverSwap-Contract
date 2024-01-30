@@ -1,0 +1,13 @@
+##Sonic Deployment
+
+AlgebraPoolDeployer to: `0xa8c7563FDe507cf479A92042808422Ad3554D281`
+AlgebraFactory deployed to: `0x67742681f0C45F689339f22df4C4061e7144fc58`
+
+TickLens deployed to: `0x508aEbB84ebF7b5e428367684671e98A09dF7F2F`
+Quoter deployed to: `0x5D4BAb39FF90BE373Aa4181B1C3EcFa520A245Dc`
+QuoterV2 deployed to: `0xf725A8A6cdB34A15f12fACB485E4440a27627a8f`
+SwapRouter deployed to: `0xAab901c364ae751FFF06769FCaD6dc57Ee0F0348`
+NonfungibleTokenPositionDescriptor deployed to: `0x3dFeD623B7A46310A988D8069235Ff98e00f3b8a`
+Proxy deployed to: `0xBffF6CF675ABE0A58a1ae44ED2d96b76C533dEfF`
+NonfungiblePositionManager deployed to: `0x04CF413057D3C25E159E749C41a5F18F8f8FEBAe`
+AlgebraInterfaceMulticall deployed to: `0xD13FdDAd5E9d2Cc9F4E9d546fdf1B01c7d1A6cD2`
