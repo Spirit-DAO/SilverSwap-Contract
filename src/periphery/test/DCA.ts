@@ -139,7 +139,7 @@ describe('SpiritDCA', function () {
 	});
 
 	describe('#getEstimatedFees', () => {
-		it('test', async () => {
+		it('Checking the getEstimatedFees function', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256)
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
