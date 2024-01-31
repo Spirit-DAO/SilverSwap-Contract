@@ -12,6 +12,7 @@ import { encodePath } from './shared/path';
 import { createPool, createPoolWithMultiplePositions, createPoolWithZeroTickInitialized } from './shared/quoter';
 import snapshotGasCost from './shared/snapshotGasCost';
 import { extendConfig } from 'hardhat/config';
+import { token } from '../typechain/@openzeppelin/contracts';
 
 type TestERC20WithAddress = TestERC20 & { address: string };
 
@@ -40,7 +41,7 @@ describe('SpiritDCA', function () {
     const quoterFactory = await ethers.getContractFactory('QuoterV2');
     quoter = (await quoterFactory.deploy(factory, wnative, await factory.poolDeployer())) as any as QuoterV2;
 	const dcaFactory = await ethers.getContractFactory('SpiritSwapDCA');
-    dca = (await dcaFactory.deploy(await router.getAddress())) as any as SpiritSwapDCA;
+    dca = (await dcaFactory.deploy(await router.getAddress(), await quoter.getAddress(), await tokens[2].getAddress())) as any as SpiritSwapDCA;
 
     return {
       tokens: _tokens,
@@ -134,6 +135,19 @@ describe('SpiritDCA', function () {
 			await dca.deleteOrder(0);
 
 			await expect((await dca.ordersByAddress(wallet.address, 0)).deleted).to.be.eq(true);
+		});
+	});
+
+	describe('#getEstimatedFees', () => {
+		it('test', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			const address = await quoter.getAddress();
+			const contract = new ethers.Contract(address, quoter.interface, wallet);
+			console.log(await contract.quoteExactOutput.staticCall(encodePath([tokens[1].address, tokens[0].address]), 1000));
+			console.log(await quoter.getAddress());
+			console.log(await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000));
 		});
 	});
 	
@@ -256,6 +270,20 @@ describe('SpiritDCA', function () {
 			await time.increase(86400*7);
 
 			await expect(dca.createOrder(tokens[0].address, tokens[1].address, 10000, 20000, 86400*7)).to.be.revertedWith('Too little received');
+		});
+
+		it('create & executeOrder and check totalAmountIn & totalAmountOut', async () => {
+			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000 * 2);
+			
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 1000, 86400*7);
+
+			await time.increase(86400*7);
+
+			await dca.executeOrder(wallet.address, 0);
+
+			await expect((await dca.ordersByAddress(wallet.address, 0)).totalAmountIn).to.be.equal(10000 * 2);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).totalAmountOut).to.be.equal(amountOut);
 		});
     });
   });

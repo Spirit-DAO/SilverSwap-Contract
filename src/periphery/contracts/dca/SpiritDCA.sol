@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.20;
 
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import {ISwapRouter} from 'contracts/interfaces/ISwapRouter.sol';
+import {IQuoterV2} from 'contracts/interfaces/IQuoterV2.sol';
 import 'contracts/NonfungiblePositionManager.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
+import 'hardhat/console.sol';
 
-contract SpiritSwapDCA {
+contract SpiritSwapDCA is IQuoterV2, Ownable {
 	ISwapRouter public router;
+	IQuoterV2 public quoter;
+	ERC20 public usdc;
 
 	struct Order {
 		address tokenIn;
@@ -16,8 +21,8 @@ contract SpiritSwapDCA {
 		uint256 period;
 		uint256 lastExecution;
 		uint256 totalExecutions;
-		uint256 totalAmountIn;/////////////
-		uint256 totalAmountOut;////////////
+		uint256 totalAmountIn;
+		uint256 totalAmountOut;
 		bool deleted;
 	}
 
@@ -29,13 +34,15 @@ contract SpiritSwapDCA {
 	event OrderExecuted(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderFailed(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 
-	constructor(address _router) {
+	constructor(address _router, address _quoter, address _usdc) {
 		router = ISwapRouter(payable(_router));
+		quoter = IQuoterV2(_quoter);
+		usdc = ERC20(_usdc);
 	}
 
 	function _executeOrder(address user, uint id) private {
-		IERC20 tokenIn = IERC20(ordersByAddress[user][id].tokenIn);
-		IERC20 tokenOut = IERC20(ordersByAddress[user][id].tokenOut);
+		ERC20 tokenIn = ERC20(ordersByAddress[user][id].tokenIn);
+		ERC20 tokenOut = ERC20(ordersByAddress[user][id].tokenOut);
 
 		uint256 balanceBefore = tokenOut.balanceOf(address(user));
 		
@@ -67,7 +74,7 @@ contract SpiritSwapDCA {
 	function executeOrder(address user, uint256 id) public {
 		require(id < getOrdersCount(msg.sender), 'Order does not exist.');
 		require(block.timestamp - ordersByAddress[user][id].lastExecution >= ordersByAddress[user][id].period, 'Period not elapsed.');
-		require(IERC20(ordersByAddress[user][id].tokenIn).balanceOf(user) >= ordersByAddress[user][id].amountIn, 'Not enough balance.');
+		require(ERC20(ordersByAddress[user][id].tokenIn).balanceOf(user) >= ordersByAddress[user][id].amountIn, 'Not enough balance.');
 		require(ordersByAddress[user][id].deleted == false, 'Order is deleted.');
 		
 		_executeOrder(user, id);
@@ -112,5 +119,19 @@ contract SpiritSwapDCA {
 		ordersByAddress[msg.sender][id].deleted = true;
 		
 		emit OrderDeleted(msg.sender, id);
+	}
+
+	function getEstimatedFees(address tokenIn, address tokenOut, uint256 amount) public view returns (uint256) {
+		bytes memory path = abi.encodePacked(tokenOut, tokenIn);
+		(bool success, bytes memory data) = address(quoter).staticcall(abi.encodeWithSignature(quoter.quoteExactOutput.selector, path, 1000));
+		if (success) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
+	
+	function editUSDC(address _usdc) public onlyOwner {
+		usdc = ERC20(_usdc);
 	}
 }
