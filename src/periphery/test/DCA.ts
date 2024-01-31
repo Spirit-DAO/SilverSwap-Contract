@@ -185,7 +185,7 @@ describe('SpiritDCA', function () {
 
 	describe('#executeOrder', () => {
 		it('executeOrder an valid order', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			const lastExecutionBefore = (await dca.ordersByAddress(wallet.address, 0)).lastExecution;
@@ -200,7 +200,7 @@ describe('SpiritDCA', function () {
 		});
 
 		it('executeOrder an order with invalid ID', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await time.increase(86400*7);
@@ -208,14 +208,14 @@ describe('SpiritDCA', function () {
 		});
 
 		it('executeOrder too early', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await expect(dca.executeOrder(wallet.address, 0)).to.be.revertedWith('Period not elapsed.');
 		});
 
 		it('executeOrder with insufficient balance', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await time.increase(86400*7);
@@ -224,7 +224,7 @@ describe('SpiritDCA', function () {
 		});
 
 		it('executeOrder with an deleted order', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await time.increase(86400*7);
@@ -233,7 +233,7 @@ describe('SpiritDCA', function () {
 		});
 
 		it('executeOrder with invalid order & retry it with valid order', async () => {
-			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await expect(dca.executeOrder(wallet.address, 0)).to.be.revertedWith('Period not elapsed.');
@@ -246,6 +246,16 @@ describe('SpiritDCA', function () {
 			await dca.executeOrder(wallet.address, 0);
 
 			await expect((await dca.ordersByAddress(wallet.address, 0)).totalExecutions).to.be.equal(2);
+		});
+
+		it('executeOrder where outMin is not respected', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 1000, 86400*7);
+
+			await dca.editOrder(0, 10000, 20000, 86400*7);
+			await time.increase(86400*7);
+
+			await expect(dca.createOrder(tokens[0].address, tokens[1].address, 10000, 20000, 86400*7)).to.be.revertedWith('Too little received');
 		});
     });
   });

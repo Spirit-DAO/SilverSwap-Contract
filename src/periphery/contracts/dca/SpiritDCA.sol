@@ -16,6 +16,8 @@ contract SpiritSwapDCA {
 		uint256 period;
 		uint256 lastExecution;
 		uint256 totalExecutions;
+		uint256 totalAmountIn;/////////////
+		uint256 totalAmountOut;////////////
 		bool deleted;
 	}
 
@@ -52,10 +54,12 @@ contract SpiritSwapDCA {
 		);
 
 		uint256 balanceAfter = tokenOut.balanceOf(address(user));
-		require(balanceAfter - balanceBefore >= ordersByAddress[user][id].amountOutMin, 'The amount of token out is lower than the TokenOutMin.');
+		require(balanceAfter - balanceBefore >= ordersByAddress[user][id].amountOutMin, 'Too little received.');
 
 		ordersByAddress[user][id].lastExecution = block.timestamp;
 		ordersByAddress[user][id].totalExecutions += 1;
+		ordersByAddress[user][id].totalAmountIn += ordersByAddress[user][id].amountIn;
+		ordersByAddress[user][id].totalAmountOut += balanceAfter - balanceBefore;
 
 		emit OrderExecuted(user, id, ordersByAddress[user][id].tokenIn, ordersByAddress[user][id].tokenOut, ordersByAddress[user][id].amountIn, ordersByAddress[user][id].amountOutMin, ordersByAddress[user][id].period);
 	}
@@ -69,12 +73,10 @@ contract SpiritSwapDCA {
 		_executeOrder(user, id);
 	}
 
-	//Add getOrdersCountActive (not deleted) ?
 	function getOrdersCount(address user) public view returns (uint256) {
 		return ordersByAddress[user].length;
 	}
 
-	//Minimum period ?
 	function createOrder(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
@@ -82,7 +84,7 @@ contract SpiritSwapDCA {
 		require(tokenIn != address(0), 'TokenIn must be different than 0x0.');
 		require(tokenOut != address(0), 'tokenOut must be different than 0x0.');
 
-		Order memory order = Order(tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, false);
+		Order memory order = Order(tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, 0, 0, false);
 		ordersByAddress[msg.sender].push(order);
 
 		_executeOrder(msg.sender, getOrdersCount(msg.sender) - 1);
@@ -111,5 +113,4 @@ contract SpiritSwapDCA {
 		
 		emit OrderDeleted(msg.sender, id);
 	}
-	
 }
