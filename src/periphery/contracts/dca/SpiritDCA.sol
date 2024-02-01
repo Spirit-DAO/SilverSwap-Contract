@@ -50,7 +50,6 @@ contract SpiritSwapDCA is Ownable {
 		uint256 balanceBefore = tokenOut.balanceOf(address(user));
 		ordersByAddress[user][id].lastExecution = block.timestamp;
 		ordersByAddress[user][id].totalExecutions += 1;
-		ordersByAddress[user][id].totalAmountIn += ordersByAddress[user][id].amountIn - fees;
 		
 		tokenIn.transferFrom(user, address(this), ordersByAddress[user][id].amountIn);
 		tokenIn.transfer(address(tresory), fees);
@@ -69,6 +68,7 @@ contract SpiritSwapDCA is Ownable {
 		
 		uint256 balanceAfter = tokenOut.balanceOf(address(user));
 		require(balanceAfter - balanceBefore >= ordersByAddress[user][id].amountOutMin, 'Too little received.');
+		ordersByAddress[user][id].totalAmountIn += ordersByAddress[user][id].amountIn - fees;
 		ordersByAddress[user][id].totalAmountOut += balanceAfter - balanceBefore;
 
 		emit OrderExecuted(user, id, ordersByAddress[user][id].tokenIn, ordersByAddress[user][id].tokenOut, ordersByAddress[user][id].amountIn - fees, ordersByAddress[user][id].amountOutMin, ordersByAddress[user][id].period);
