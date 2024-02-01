@@ -3,14 +3,12 @@ pragma solidity =0.8.20;
 
 import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import {ISwapRouter} from 'contracts/interfaces/ISwapRouter.sol';
-import {IQuoterV2} from 'contracts/interfaces/IQuoterV2.sol';
 import 'contracts/NonfungiblePositionManager.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import 'hardhat/console.sol';
 
 contract SpiritSwapDCA is Ownable {
 	ISwapRouter public router;
-	IQuoterV2 public quoter;
 	ERC20 public usdc;
 	ERC20 public tresory;
 
@@ -35,43 +33,45 @@ contract SpiritSwapDCA is Ownable {
 	event OrderExecuted(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderFailed(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 
-	constructor(address _router, address _quoter, address _tresory, address _usdc) {
+	constructor(address _router, address _tresory, address _usdc) {
 		router = ISwapRouter(payable(_router));
-		quoter = IQuoterV2(_quoter);
 		usdc = ERC20(_usdc);
 		tresory = ERC20(_tresory);
 	}
 
+	//faire une fonction getCurrentTimestamp à la place de block.timestamp pour fix le not-rely-on-time
+	//https://ethereum.stackexchange.com/questions/413/can-a-contract-safely-rely-on-block-timestamp
 	function _executeOrder(address user, uint id) private {
 		ERC20 tokenIn = ERC20(ordersByAddress[user][id].tokenIn);
 		ERC20 tokenOut = ERC20(ordersByAddress[user][id].tokenOut);
+
 		uint256	fees = ordersByAddress[user][id].amountIn / 100;
 
 		uint256 balanceBefore = tokenOut.balanceOf(address(user));
+		ordersByAddress[user][id].lastExecution = block.timestamp;
+		ordersByAddress[user][id].totalExecutions += 1;
+		ordersByAddress[user][id].totalAmountIn += ordersByAddress[user][id].amountIn - fees;
 		
-		tokenIn.transferFrom(user, address(this), ordersByAddress[user][id].amountIn + fees);
-		tokenIn.approve(address(router), ordersByAddress[user][id].amountIn);
+		tokenIn.transferFrom(user, address(this), ordersByAddress[user][id].amountIn);
+		tokenIn.transfer(address(tresory), fees);
+		tokenIn.approve(address(router), ordersByAddress[user][id].amountIn - fees);
 		router.exactInputSingle(
 			ISwapRouter.ExactInputSingleParams({
 				tokenIn: ordersByAddress[user][id].tokenIn,
 				tokenOut: ordersByAddress[user][id].tokenOut,
 				recipient: payable(address(user)),
 				deadline: block.timestamp + 100,
-				amountIn: ordersByAddress[user][id].amountIn,
+				amountIn: ordersByAddress[user][id].amountIn - fees,
 				amountOutMinimum: ordersByAddress[user][id].amountOutMin,
 				limitSqrtPrice: 0
 			})
 		);
-
+		
 		uint256 balanceAfter = tokenOut.balanceOf(address(user));
 		require(balanceAfter - balanceBefore >= ordersByAddress[user][id].amountOutMin, 'Too little received.');
-
-		ordersByAddress[user][id].lastExecution = block.timestamp;
-		ordersByAddress[user][id].totalExecutions += 1;
-		ordersByAddress[user][id].totalAmountIn += ordersByAddress[user][id].amountIn;
 		ordersByAddress[user][id].totalAmountOut += balanceAfter - balanceBefore;
 
-		emit OrderExecuted(user, id, ordersByAddress[user][id].tokenIn, ordersByAddress[user][id].tokenOut, ordersByAddress[user][id].amountIn, ordersByAddress[user][id].amountOutMin, ordersByAddress[user][id].period);
+		emit OrderExecuted(user, id, ordersByAddress[user][id].tokenIn, ordersByAddress[user][id].tokenOut, ordersByAddress[user][id].amountIn - fees, ordersByAddress[user][id].amountOutMin, ordersByAddress[user][id].period);
 	}
 
 	function executeOrder(address user, uint256 id) public {
@@ -122,16 +122,6 @@ contract SpiritSwapDCA is Ownable {
 		ordersByAddress[msg.sender][id].deleted = true;
 		
 		emit OrderDeleted(msg.sender, id);
-	}
-
-	function getEstimatedFees(address tokenIn, address tokenOut, uint256 amount) public view returns (uint256) {
-		bytes memory path = abi.encodePacked(tokenOut, tokenIn);
-		(bool success, bytes memory data) = address(quoter).staticcall(abi.encodeWithSelector(quoter.quoteExactOutput.selector, path, 0));
-		if (success) {
-			return 1;
-		} else {
-			return 0;
-		}
 	}
 
 	function editUSDC(address _usdc) public onlyOwner {

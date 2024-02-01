@@ -20,6 +20,7 @@ describe('SpiritDCA', function () {
   this.timeout(40000);
   let wallet: Wallet;
   let trader: Wallet;
+  let tresory: Wallet;
 
   const swapRouterFixture: () => Promise<{
     nft: MockTimeNonfungiblePositionManager;
@@ -41,7 +42,9 @@ describe('SpiritDCA', function () {
     const quoterFactory = await ethers.getContractFactory('QuoterV2');
     quoter = (await quoterFactory.deploy(factory, wnative, await factory.poolDeployer())) as any as QuoterV2;
 	const dcaFactory = await ethers.getContractFactory('SpiritSwapDCA');
-    dca = (await dcaFactory.deploy(await router.getAddress(), await quoter.getAddress(), await tokens[2].getAddress())) as any as SpiritSwapDCA;
+	const wallets = await (ethers as any).getSigners();
+    [tresory] = wallets;
+    dca = (await dcaFactory.deploy(await router.getAddress(), tresory.address, await tokens[2].getAddress())) as any as SpiritSwapDCA;
 
     return {
       tokens: _tokens,
@@ -95,7 +98,7 @@ describe('SpiritDCA', function () {
 		//'tokenIn is null'
 
 		it('10 tokens with avaible balances', async () => {
-			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000);
+			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000 * 0.99);
 
 			const balanceBefore0 = await tokens[0].balanceOf(wallet.address);
 			const balanceBefore1 = await tokens[1].balanceOf(wallet.address);
@@ -106,7 +109,7 @@ describe('SpiritDCA', function () {
 			const balanceAfter0 = await tokens[0].balanceOf(wallet.address);
 			const balanceAfter1 = await tokens[1].balanceOf(wallet.address);
 			
-			expect (balanceBefore0 - balanceAfter0).to.be.eq(10000);
+			expect (balanceBefore0 - balanceAfter0).to.be.eq(10000 * 0.99);
 			expect (balanceAfter1 - balanceBefore1).to.be.eq(amountOut);
 		});
 
@@ -138,7 +141,7 @@ describe('SpiritDCA', function () {
 		});
 	});
 
-	describe('#getEstimatedFees', () => {
+	/*describe('#getEstimatedFees', () => {
 		it('Checking the getEstimatedFees function', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256)
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
@@ -153,7 +156,7 @@ describe('SpiritDCA', function () {
 			await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000);
 			//console.log(await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000));
 		});
-	});
+	});*/
 	
 	describe('#editOrder', () => {
 		it('Try to edit an order', async () => {
@@ -258,6 +261,7 @@ describe('SpiritDCA', function () {
 
 			await time.increase(86400*7);
 			await tokens[0].transfer(trader.address, await tokens[0].balanceOf(wallet.address));
+			
 			await expect(dca.executeOrder(wallet.address, 0)).to.be.revertedWith('Not enough balance.');
 
 			await tokens[0].connect(trader).transfer(wallet.address, await tokens[0].balanceOf(trader.address));
@@ -277,7 +281,7 @@ describe('SpiritDCA', function () {
 		});
 
 		it('create & executeOrder and check totalAmountIn & totalAmountOut', async () => {
-			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), 10000 * 2);
+			const { amountOut } = await quoter.quoteExactInput.staticCall(encodePath([tokens[0].address, tokens[1].address]), (10000 * 0.99) + (10000 * 0.99));
 			
 			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 1000, 86400*7);
@@ -286,9 +290,65 @@ describe('SpiritDCA', function () {
 
 			await dca.executeOrder(wallet.address, 0);
 
-			await expect((await dca.ordersByAddress(wallet.address, 0)).totalAmountIn).to.be.equal(10000 * 2);
+			await expect((await dca.ordersByAddress(wallet.address, 0)).totalAmountIn).to.be.equal((10000 * 0.99) + (10000 * 0.99));
 			await expect((await dca.ordersByAddress(wallet.address, 0)).totalAmountOut).to.be.equal(amountOut);
 		});
     });
+
+	describe('#tresory', () => {
+		it('tresory got 1% fees of 1000', async () => {
+			await dca.editTresory(trader.address);
+
+			let balanceBefore = await tokens[0].balanceOf(trader.address);
+			
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			let balanceAfter = await tokens[0].balanceOf(trader.address);
+			await expect(balanceAfter - balanceBefore).to.be.equal(10000*0.01);
+
+			balanceBefore = await tokens[0].balanceOf(trader.address);
+			
+			await time.increase(86400*7);
+			await dca.executeOrder(wallet.address, 0);
+
+			balanceAfter = await tokens[0].balanceOf(trader.address);
+			await expect(balanceAfter - balanceBefore).to.be.equal(10000*0.01);
+
+		});
+
+		it('tresory got 1% fees of 84987', async () => {
+			await dca.editTresory(trader.address);
+
+			let balanceBefore = await tokens[0].balanceOf(trader.address);
+			
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 84987, 0, 86400*7);
+
+			let balanceAfter = await tokens[0].balanceOf(trader.address);
+			console.log(balanceAfter - balanceBefore);
+		});
+
+		it('tresory got 1% fees of 20000 and editing the order to 66700 and re try', async () => {
+			await dca.editTresory(trader.address);
+
+			let balanceBefore = await tokens[0].balanceOf(trader.address);
+			
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			let balanceAfter = await tokens[0].balanceOf(trader.address);
+			await expect(balanceAfter - balanceBefore).to.be.equal(10000*0.01);
+
+			balanceBefore = await tokens[0].balanceOf(trader.address);
+			
+			await time.increase(86400*7);
+			await dca.editOrder(0, 66700, 0, 86400*7);
+			await dca.executeOrder(wallet.address, 0);
+
+			balanceAfter = await tokens[0].balanceOf(trader.address);
+			await expect(balanceAfter - balanceBefore).to.be.equal(66700*0.01);
+		});
+	});
   });
 });
