@@ -147,7 +147,11 @@ describe('SpiritDCA', function () {
 			const contract = new ethers.Contract(address, quoter.interface, wallet);
 			console.log(await contract.quoteExactOutput.staticCall(encodePath([tokens[1].address, tokens[0].address]), 1000));
 			console.log(await quoter.getAddress());
-			console.log(await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000));
+			console.log(await tokens[1].address);
+			console.log(await tokens[0].address);
+			console.log(encodePath([tokens[1].address, tokens[0].address]));
+			await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000);
+			//console.log(await dca.getEstimatedFees(tokens[0].address, tokens[1].address, 1000));
 		});
 	});
 	

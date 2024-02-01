@@ -8,10 +8,11 @@ import 'contracts/NonfungiblePositionManager.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import 'hardhat/console.sol';
 
-contract SpiritSwapDCA is IQuoterV2, Ownable {
+contract SpiritSwapDCA is Ownable {
 	ISwapRouter public router;
 	IQuoterV2 public quoter;
 	ERC20 public usdc;
+	ERC20 public tresory;
 
 	struct Order {
 		address tokenIn;
@@ -34,19 +35,21 @@ contract SpiritSwapDCA is IQuoterV2, Ownable {
 	event OrderExecuted(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderFailed(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 
-	constructor(address _router, address _quoter, address _usdc) {
+	constructor(address _router, address _quoter, address _tresory, address _usdc) {
 		router = ISwapRouter(payable(_router));
 		quoter = IQuoterV2(_quoter);
 		usdc = ERC20(_usdc);
+		tresory = ERC20(_tresory);
 	}
 
 	function _executeOrder(address user, uint id) private {
 		ERC20 tokenIn = ERC20(ordersByAddress[user][id].tokenIn);
 		ERC20 tokenOut = ERC20(ordersByAddress[user][id].tokenOut);
+		uint256	fees = ordersByAddress[user][id].amountIn / 100;
 
 		uint256 balanceBefore = tokenOut.balanceOf(address(user));
 		
-		tokenIn.transferFrom(user, address(this), ordersByAddress[user][id].amountIn);
+		tokenIn.transferFrom(user, address(this), ordersByAddress[user][id].amountIn + fees);
 		tokenIn.approve(address(router), ordersByAddress[user][id].amountIn);
 		router.exactInputSingle(
 			ISwapRouter.ExactInputSingleParams({
@@ -123,15 +126,19 @@ contract SpiritSwapDCA is IQuoterV2, Ownable {
 
 	function getEstimatedFees(address tokenIn, address tokenOut, uint256 amount) public view returns (uint256) {
 		bytes memory path = abi.encodePacked(tokenOut, tokenIn);
-		(bool success, bytes memory data) = address(quoter).staticcall(abi.encodeWithSignature(quoter.quoteExactOutput.selector, path, 1000));
+		(bool success, bytes memory data) = address(quoter).staticcall(abi.encodeWithSelector(quoter.quoteExactOutput.selector, path, 0));
 		if (success) {
 			return 1;
 		} else {
 			return 0;
 		}
 	}
-	
+
 	function editUSDC(address _usdc) public onlyOwner {
 		usdc = ERC20(_usdc);
+	}
+
+	function editTresory(address _tresory) public onlyOwner {
+		tresory = ERC20(_tresory);
 	}
 }
