@@ -143,21 +143,45 @@ describe('SpiritDCA', function () {
 		});
 	});
 
-	describe('#deleteOrder', () => {
-		it('deleteOrder', async () => {
+	describe('#stopOrder', () => {
+		it('stopOrder', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256)
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
-			await dca.deleteOrder(0);
-			await expect((await dca.ordersById(0)).deleted).to.be.eq(true);
+			await dca.stopOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
 		});
 
 		it('Trying to delete someones order', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256)
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
-			await expect(dca.connect(trader).deleteOrder(0)).to.be.revertedWith('Order does not belong to user.');
-			await expect((await dca.ordersById(0)).deleted).to.be.eq(false);
+			await expect(dca.connect(trader).stopOrder(0)).to.be.revertedWith('Order does not belong to user.');
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(false);
+		});
+	});
+
+	describe('#restartOrder', () => {
+		it('restartOrder', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await dca.stopOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
+
+			await dca.restartOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(false);
+		});
+
+		it('Trying to restart someones order', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await dca.stopOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
+
+			await expect(dca.connect(trader).restartOrder(0)).to.be.revertedWith('Order does not belong to user.');
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
 		});
 	});
 
@@ -208,12 +232,12 @@ describe('SpiritDCA', function () {
 			await expect(dca.editOrder(16, 20000, 100, 86400*30)).to.be.revertedWith('Order does not exist.');
 		});
 
-		it('Edit an deleted order', async () => {
+		it('Edit an stopped order', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256)
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
-			await dca.deleteOrder(0);
-			await expect(dca.editOrder(0, 20000, 100, 86400*30)).to.be.revertedWith('Order is deleted.');
+			await dca.stopOrder(0);
+			await expect(dca.editOrder(0, 20000, 100, 86400*30)).to.be.revertedWith('Order is stopped.');
 		});
 
 		it('Edit an order with invalid period', async () => {
@@ -271,13 +295,31 @@ describe('SpiritDCA', function () {
 			await expect(dca.executeOrder(0)).to.be.revertedWith('Not enough balance.');
 		});
 
-		it('executeOrder with an deleted order', async () => {
+		it('executeOrder with an stopped order', async () => {
 			await tokens[0].approve(await dca.getAddress(), MaxUint256);
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await time.increase(86400*7);
-			await dca.deleteOrder(0);
-			await expect(dca.executeOrder(0)).to.be.revertedWith('Order is deleted.');
+			
+			await dca.stopOrder(0);
+			await expect(dca.executeOrder(0)).to.be.revertedWith('Order is stopped.');
+		});
+
+		it('executeOrder with an restarted order', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256);
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await time.increase(86400*7);
+
+			await dca.stopOrder(0);
+			await expect(dca.executeOrder(0)).to.be.revertedWith('Order is stopped.');
+
+			await dca.restartOrder(0);
+			const lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
+			await dca.executeOrder(0);
+			const lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
+
+			await expect(lastExecutionAfter > lastExecutionBefore);
 		});
 
 		it('executeOrder with invalid order & retry it with valid order', async () => {

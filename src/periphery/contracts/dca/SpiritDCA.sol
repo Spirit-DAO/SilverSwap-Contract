@@ -23,7 +23,7 @@ contract SpiritSwapDCA is Ownable {
 		uint256 totalExecutions;
 		uint256 totalAmountIn;
 		uint256 totalAmountOut;
-		bool deleted;
+		bool stopped;
 	}
 
 	uint256 public ordersCount;
@@ -32,7 +32,8 @@ contract SpiritSwapDCA is Ownable {
 
 	event OrderCreated(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderEdited(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
-	event OrderDeleted(address indexed user, uint256 indexed id);
+	event OrderStopped(address indexed user, uint256 indexed id);
+	event OrderRestarted(address indexed user, uint256 indexed id);
 	event OrderExecuted(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderFailed(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 
@@ -78,7 +79,7 @@ contract SpiritSwapDCA is Ownable {
 
 	function executeOrder(uint256 id) public {
 		require(id < getOrdersCount(), 'Order does not exist.');
-		require(ordersById[id].deleted == false, 'Order is deleted.');
+		require(ordersById[id].stopped == false, 'Order is stopped.');
 		require(block.timestamp - ordersById[id].lastExecution >= ordersById[id].period, 'Period not elapsed.');
 		require(ERC20(ordersById[id].tokenIn).balanceOf(ordersById[id].user) >= ordersById[id].amountIn, 'Not enough balance.');
 
@@ -107,10 +108,11 @@ contract SpiritSwapDCA is Ownable {
 		emit OrderCreated(msg.sender, getOrdersCount() - 1, tokenIn, tokenOut, amountIn, amountOutMin, period);
 	}
 
+	//Pouvoir edit même si stopped ?
 	function editOrder(uint256 id, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(id < getOrdersCount(), 'Order does not exist.');
 		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
-		require(ordersById[id].deleted == false, 'Order is deleted.');
+		require(ordersById[id].stopped == false, 'Order is stopped.');
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
 
@@ -121,14 +123,24 @@ contract SpiritSwapDCA is Ownable {
 		emit OrderEdited(msg.sender, id, ordersById[id].tokenIn, ordersById[id].tokenOut, amountIn, amountOutMin, period);
 	}
 
-	function deleteOrder(uint256 id) public {
+	function stopOrder(uint256 id) public {
 		require(id < getOrdersCount(), 'Order does not exist.');
 		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
-		require(ordersById[id].deleted == false, 'Order is already deleted.');
+		require(ordersById[id].stopped == false, 'Order is already stopped.');
 
-		ordersById[id].deleted = true;
+		ordersById[id].stopped = true;
 
-		emit OrderDeleted(msg.sender, id);
+		emit OrderStopped(msg.sender, id);
+	}
+
+	function restartOrder(uint256 id) public {
+		require(id < getOrdersCount(), 'Order does not exist.');
+		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
+		require(ordersById[id].stopped == true, 'Order is not stopped.');
+
+		ordersById[id].stopped = false;
+
+		emit OrderRestarted(msg.sender, id);
 	}
 
 	function editUSDC(address _usdc) public onlyOwner {
