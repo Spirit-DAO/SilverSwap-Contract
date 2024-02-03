@@ -25,7 +25,6 @@ contract SpiritSwapDCA is Ownable {
 		uint256 totalAmountOut;
 		bool deleted;
 	}
-	//mapping(address => Order[]) public ordersByAddress;
 
 	uint256 public ordersCount;
 	mapping(uint => Order) public ordersById;
