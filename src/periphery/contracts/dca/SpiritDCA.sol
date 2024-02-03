@@ -90,7 +90,6 @@ contract SpiritSwapDCA is Ownable {
 		return ordersCount;
 	}
 
-	//Arreter d'utiliser fonction getOrdersCount ?
 	function createOrder(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
@@ -108,7 +107,6 @@ contract SpiritSwapDCA is Ownable {
 		emit OrderCreated(msg.sender, getOrdersCount() - 1, tokenIn, tokenOut, amountIn, amountOutMin, period);
 	}
 
-	//Pouvoir edit même si stopped ?
 	function editOrder(uint256 id, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(id < getOrdersCount(), 'Order does not exist.');
 		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
