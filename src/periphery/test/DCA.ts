@@ -92,7 +92,7 @@ describe('SpiritDCA', function () {
 		});
 
 		it('tokenIn & tokenOut are same', async () => {
-			await expect(dca.createOrder(tokens[0].address, tokens[0].address, 10000, 20000, 360)).to.be.revertedWith('TokenIn must be different than TokenOut.');
+			await expect(dca.createOrder(tokens[0].address, tokens[0].address, 10000, 20000, 360)).to.be.revertedWith('TokenOut must be different.');
 		});
 
 		//'tokenIn is null'
@@ -183,6 +183,39 @@ describe('SpiritDCA', function () {
 			await expect(dca.connect(trader).restartOrder(0)).to.be.revertedWith('Order does not belong to user.');
 			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
 		});
+
+		it('restartOrder & check if it has been executed (should be)', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await dca.stopOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
+
+			const lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
+			await time.increase(86400*7);
+
+			await dca.restartOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(false);
+			const lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
+			
+			await expect(lastExecutionAfter > lastExecutionBefore);
+		});
+
+		it('restartOrder & check if it has been executed (shouldnt be)', async () => {
+			await tokens[0].approve(await dca.getAddress(), MaxUint256)
+			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
+
+			await dca.stopOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(true);
+
+			const lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
+
+			await dca.restartOrder(0);
+			await expect((await dca.ordersById(0)).stopped).to.be.eq(false);
+			const lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
+			
+			await expect(lastExecutionAfter == lastExecutionBefore);
+		});
 	});
 
 	/*describe('#getEstimatedFees', () => {
@@ -237,7 +270,16 @@ describe('SpiritDCA', function () {
 			await dca.createOrder(tokens[0].address, tokens[1].address, 10000, 0, 86400*7);
 
 			await dca.stopOrder(0);
-			await expect(dca.editOrder(0, 20000, 100, 86400*30)).to.be.revertedWith('Order is stopped.');
+
+			await expect((await dca.ordersById(0)).amountIn).to.be.equal(10000);
+			await expect((await dca.ordersById(0)).amountOutMin).to.be.equal(0);
+			await expect((await dca.ordersById(0)).period).to.be.equal(86400*7);
+
+			await dca.editOrder(0, 20000, 100, 86400*30);
+
+			await expect((await dca.ordersById(0)).amountIn).to.be.equal(20000);
+			await expect((await dca.ordersById(0)).amountOutMin).to.be.equal(100);
+			await expect((await dca.ordersById(0)).period).to.be.equal(86400*30);
 		});
 
 		it('Edit an order with invalid period', async () => {
@@ -314,10 +356,15 @@ describe('SpiritDCA', function () {
 			await dca.stopOrder(0);
 			await expect(dca.executeOrder(0)).to.be.revertedWith('Order is stopped.');
 
+			let lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
 			await dca.restartOrder(0);
-			const lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
+			let lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
+			await expect(dca.executeOrder(0)).to.be.revertedWith('Period not elapsed.');
+
+			await time.increase(86400*7);
+			lastExecutionBefore = (await dca.ordersById(0)).lastExecution;
 			await dca.executeOrder(0);
-			const lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
+			lastExecutionAfter = (await dca.ordersById(0)).lastExecution;
 
 			await expect(lastExecutionAfter > lastExecutionBefore);
 		});

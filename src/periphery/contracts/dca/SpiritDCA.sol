@@ -23,6 +23,7 @@ contract SpiritSwapDCA is Ownable {
 		uint256 totalExecutions;
 		uint256 totalAmountIn;
 		uint256 totalAmountOut;
+		uint256 createdAt;
 		bool stopped;
 	}
 
@@ -93,11 +94,11 @@ contract SpiritSwapDCA is Ownable {
 	function createOrder(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
-		require(tokenIn != tokenOut, 'TokenIn must be different than TokenOut.');
-		require(tokenIn != address(0), 'TokenIn must be different than 0x0.');
-		require(tokenOut != address(0), 'tokenOut must be different than 0x0.');
+		require(tokenIn != tokenOut, 'TokenOut must be different.');
+		require(tokenIn != address(0), 'Invalid tokenIn.');
+		require(tokenOut != address(0), 'Invalid tokenOut.');
 
-		Order memory order = Order(msg.sender, tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, 0, 0, false);
+		Order memory order = Order(msg.sender, tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, 0, 0, block.timestamp, false);
 		ordersById[ordersCount] = order;
 		idByAddress[msg.sender].push(ordersCount);
 		ordersCount++;
@@ -110,7 +111,6 @@ contract SpiritSwapDCA is Ownable {
 	function editOrder(uint256 id, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
 		require(id < getOrdersCount(), 'Order does not exist.');
 		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
-		require(ordersById[id].stopped == false, 'Order is stopped.');
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
 
@@ -137,6 +137,9 @@ contract SpiritSwapDCA is Ownable {
 		require(ordersById[id].stopped == true, 'Order is not stopped.');
 
 		ordersById[id].stopped = false;
+		if (block.timestamp - ordersById[id].lastExecution >= ordersById[id].period) {
+			_executeOrder(id);
+		}
 
 		emit OrderRestarted(msg.sender, id);
 	}

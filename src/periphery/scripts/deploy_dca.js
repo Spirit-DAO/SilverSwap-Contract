@@ -8,7 +8,7 @@ async function main() {
   let deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'));
 
   const LiquidityQuoterFactory = await hre.ethers.getContractFactory('SpiritSwapDCA');
-  const LiquidityQuoter = await LiquidityQuoterFactory.deploy(deploysData.swapRouter);
+  const LiquidityQuoter = await LiquidityQuoterFactory.deploy(deploysData.swapRouter, '0x9FDdA2Eb31bF682E918be4548722B82A7F5705E5', '0x9FDdA2Eb31bF682E918be4548722B82A7F5705E5');
 
   await LiquidityQuoter.waitForDeployment();
 
