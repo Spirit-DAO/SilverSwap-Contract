@@ -121,7 +121,7 @@ contract SpiritSwapDCA is Ownable {
 		require(ordersById[id].user == msg.sender, 'Order does not belong to user.');
 		require(period > 0, 'Period must be greater than 0.');
 		require(amountIn > 0, 'AmountIn must be greater than 0.');
-		
+
 		ordersById[id].amountIn = amountIn;
 		ordersById[id].amountOutMin = amountOutMin;
 		ordersById[id].period = period;
