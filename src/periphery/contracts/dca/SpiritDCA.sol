@@ -28,8 +28,8 @@ contract SpiritSwapDCA is Ownable {
 	}
 
 	uint256 public ordersCount;
-	mapping(uint => Order) public ordersById;
-	mapping(address => uint[]) public idByAddress;
+	mapping(uint256 => Order) public ordersById;
+	mapping(address => uint256[]) public idByAddress;
 
 	event OrderCreated(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
 	event OrderEdited(address indexed user, uint256 indexed id, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period);
