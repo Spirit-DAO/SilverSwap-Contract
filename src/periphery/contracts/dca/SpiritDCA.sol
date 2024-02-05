@@ -6,26 +6,12 @@ import {ISwapRouter} from 'contracts/interfaces/ISwapRouter.sol';
 import 'contracts/NonfungiblePositionManager.sol';
 import '@openzeppelin/contracts/access/Ownable.sol';
 import 'hardhat/console.sol';
+import './DcaApprover.sol';
 
 contract SpiritSwapDCA is Ownable {
 	ISwapRouter public router;
 	ERC20 public usdc;
 	ERC20 public tresory;
-
-	struct Order {
-		address user;
-		address tokenIn;
-		address tokenOut;
-		uint256 amountIn;
-		uint256 amountOutMin;
-		uint256 period;
-		uint256 lastExecution;
-		uint256 totalExecutions;
-		uint256 totalAmountIn;
-		uint256 totalAmountOut;
-		uint256 createdAt;
-		bool stopped;
-	}
 
 	uint256 public ordersCount;
 	mapping(uint256 => Order) public ordersById;
@@ -52,11 +38,11 @@ contract SpiritSwapDCA is Ownable {
 		uint256	fees = ordersById[id].amountIn / 100;
 
 		uint256 balanceBefore = tokenOut.balanceOf(user);
+        SpiritDcaApprover(ordersById[id].approver).executeOrder();
 		ordersById[id].lastExecution = block.timestamp;
 		ordersById[id].totalExecutions += 1;
-		ordersById[id].totalAmountIn += ordersById[id].amountIn - fees;
+		ordersById[id].totalAmountIn += ordersById[id].amountIn;
 		
-		tokenIn.transferFrom(user, address(this), ordersById[id].amountIn);
 		tokenIn.transfer(address(tresory), fees);
 		tokenIn.approve(address(router), ordersById[id].amountIn - fees);
 		router.exactInputSingle(
@@ -95,8 +81,29 @@ contract SpiritSwapDCA is Ownable {
         return idByAddress[user].length;
     }
 
-    function getOrdersByIndex(address user, uint256 index) public view returns (Order memory) {
-        return ordersById[idByAddress[user][index]];
+    function getOrdersByIndex(address user, uint256 index) public view returns (Order memory, uint256 id) {
+        return (ordersById[idByAddress[user][index]], idByAddress[user][index]);
+    }
+
+    function getApproveBytecode(uint256 _id, address _user, address _tokenIn) public pure returns (bytes memory) {
+        bytes memory bytecode = type(SpiritDcaApprover).creationCode;
+
+        return abi.encodePacked(bytecode, abi.encode(_id, _user, _tokenIn));
+    }
+
+    function getApproveAddress(
+        address _user,
+        address _tokenIn
+    ) public view returns (address) {
+        uint _id = ordersCount;
+        bytes memory bytecode = getApproveBytecode(_id, _user, _tokenIn);
+
+        bytes32 hash = keccak256(
+            abi.encodePacked(bytes1(0xff), address(this), _id, keccak256(bytecode))
+        );
+
+        // NOTE: cast last 20 bytes of hash to address
+        return address(uint160(uint(hash)));
     }
 
 	function createOrder(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin, uint256 period) public {
@@ -106,7 +113,8 @@ contract SpiritSwapDCA is Ownable {
 		require(tokenIn != address(0), 'Invalid tokenIn.');
 		require(tokenOut != address(0), 'Invalid tokenOut.');
 
-		Order memory order = Order(msg.sender, tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, 0, 0, block.timestamp, false);
+        address approver = address(new SpiritDcaApprover{salt: bytes32(ordersCount)}(ordersCount, msg.sender, tokenIn));
+		Order memory order = Order(msg.sender, tokenIn, tokenOut, amountIn, amountOutMin, period, 0, 0, 0, 0, block.timestamp, false, approver);
 		ordersById[ordersCount] = order;
 		idByAddress[msg.sender].push(ordersCount);
 		ordersCount++;

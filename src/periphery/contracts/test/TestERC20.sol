@@ -7,7 +7,7 @@ import '@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol';
 contract TestERC20 is ERC20Permit {
     uint256 fee;
 
-    constructor(uint256 amountToMint) ERC20('Test ERC20', 'TEST') ERC20Permit('Test ERC20') {
+    constructor(uint256 amountToMint) ERC20('USDC', 'USDC') ERC20Permit('USDC') {
         _mint(msg.sender, amountToMint);
     }
 
@@ -23,5 +23,9 @@ contract TestERC20 is ERC20Permit {
             super._transfer(owner, address(this), collectedFee);
         }
         super._transfer(owner, to, amount);
+    }
+
+    function mint(uint256 amount) public {
+        _mint(msg.sender, amount);
     }
 }
