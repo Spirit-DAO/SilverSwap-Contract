@@ -2,8 +2,10 @@ import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-contract-sizer';
 import 'hardhat-output-validator';
 import 'solidity-docgen';
+import * as tdly from '@tenderly/hardhat-tenderly';
 import { SolcUserConfig } from 'hardhat/types';
 import baseConfig from '../../hardhat.base.config';
+tdly.setup();
 
 const HIGHEST_OPTIMIZER_COMPILER_SETTINGS: SolcUserConfig = {
   version: '0.8.20',
@@ -70,6 +72,11 @@ export default {
   etherscan: baseConfig.etherscan,
   typechain: {
     outDir: 'typechain',
+	},
+	tenderly: {
+		username: "PolEpie" ?? "error",
+		project: "power",
+		privateVerification: true,
   },
   solidity: {
     compilers: [DEFAULT_COMPILER_SETTINGS],

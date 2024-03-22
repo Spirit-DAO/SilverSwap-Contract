@@ -2,9 +2,11 @@ import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-output-validator';
 import 'hardhat-contract-sizer';
 import 'solidity-docgen';
+import * as tdly from '@tenderly/hardhat-tenderly';
 import baseConfig from '../../hardhat.base.config';
 import { task } from 'hardhat/config';
 
+tdly.setup();
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.8.20',
   settings: {
@@ -76,6 +78,11 @@ export default {
       'contracts/libraries/NFTDescriptor.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
       'contracts/libraries/NFTSVG.sol': LOWEST_OPTIMIZER_COMPILER_SETTINGS,
     },
+  },
+  tenderly: {
+    username: 'PolEpie' ?? 'error',
+    project: 'power',
+    privateVerification: true,
   },
   typechain: {
     outDir: 'typechain',

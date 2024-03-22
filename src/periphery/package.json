@@ -25,14 +25,14 @@
     "!artifacts/contracts/base/**/*"
   ],
   "dependencies": {
-    "@cryptoalgebra/integral-core": "0.2.0",
+    "@cryptoalgebra/integral-core": "1.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@openzeppelin/contracts": "4.9.3",
-    "@uniswap/v2-core": "1.0.1",
-    "@cryptoalgebra/integral-core": "1.0.0"
+    "@uniswap/v2-core": "1.0.1"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@tenderly/hardhat-tenderly": "^2.2.2",
     "hardhat": "^2.19.4",
     "is-svg": "^4.3.1"
   },

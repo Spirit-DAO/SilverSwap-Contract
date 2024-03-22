@@ -27,6 +27,11 @@ export default {
 		chainId: 64165,
 		accounts: [PRIVATE_KEY],
 	},
+	tenderly: {
+		url: "https://rpc.vnet.tenderly.co/devnet/spirit-v3/62c3849c-97dd-4316-b999-4f846996b5c1",
+		chainId: 250,
+		accounts: [PRIVATE_KEY],
+	},
 	ftmtest: {
 		url: "https://rpc.testnet.fantom.network/",
 		chainId: 4002,
@@ -75,17 +80,17 @@ export default {
     seiTestnet: {
       url: `https://evm-rpc.arctic-1.seinetwork.io`,
       chainId: 713715,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     mode: {
       url: `https://mainnet.mode.network/`,
       chainId: 34443,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     blastTestnet: {
       url: `https://blast-sepolia.blockpi.network/v1/rpc/public`,
       chainId: 168587773,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     telosTestnet: {
       url: `https://testnet.telos.net/evm`,
@@ -95,7 +100,7 @@ export default {
     beraTestnet: {
       url: `https://artio.rpc.berachain.com/`,
       chainId: 80085,
-      accounts: [`0x${MNEMONIC || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
     maticMainnet: {
       url: `https://rpc-mainnet.matic.quiknode.pro`,

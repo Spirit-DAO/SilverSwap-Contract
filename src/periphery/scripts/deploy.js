@@ -8,16 +8,16 @@ async function main() {
   let deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'));
 
   // WNativeTokenAddress
-  const WNativeTokenAddress = '0xfb12b36f9819c00755588d43826cf2ca7ea7554b';
+  const WNativeTokenAddress = '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83';
   const signers = await hre.ethers.getSigners();
   const ProxyAdmin = signers[0].address;
 
   deploysData.wrapped = WNativeTokenAddress;
 
   const TickLensFactory = await hre.ethers.getContractFactory('TickLens');
-  const TickLens = await TickLensFactory.deploy();
+  let TickLens = await TickLensFactory.deploy();
 
-  await TickLens.waitForDeployment();
+  TickLens = await TickLens.waitForDeployment();
 
   deploysData.tickLens = TickLens.target;
   console.log('TickLens deployed to:', TickLens.target);
@@ -25,9 +25,9 @@ async function main() {
   // arg1 factory address
   // arg2 wnative address
   const QuoterFactory = await hre.ethers.getContractFactory('Quoter');
-  const Quoter = await QuoterFactory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
+  let Quoter = await QuoterFactory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
 
-  await Quoter.waitForDeployment();
+  Quoter = await Quoter.waitForDeployment();
 
   deploysData.quoter = Quoter.target;
   console.log('Quoter deployed to:', Quoter.target);
@@ -35,9 +35,9 @@ async function main() {
   // arg1 factory address
   // arg2 wnative address
   const QuoterV2Factory = await hre.ethers.getContractFactory('QuoterV2');
-  const QuoterV2 = await QuoterV2Factory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
+  let QuoterV2 = await QuoterV2Factory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
 
-  await QuoterV2.waitForDeployment();
+  QuoterV2 = await QuoterV2.waitForDeployment();
 
   deploysData.quoterV2 = QuoterV2.target;
   console.log('QuoterV2 deployed to:', QuoterV2.target);
@@ -45,17 +45,17 @@ async function main() {
   // arg1 factory address
   // arg2 wnative address
   const SwapRouterFactory = await hre.ethers.getContractFactory('SwapRouter');
-  const SwapRouter = await SwapRouterFactory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
+  let SwapRouter = await SwapRouterFactory.deploy(deploysData.factory, WNativeTokenAddress, deploysData.poolDeployer);
 
-  await SwapRouter.waitForDeployment();
+  SwapRouter = await SwapRouter.waitForDeployment();
 
   deploysData.swapRouter = SwapRouter.target;
   console.log('SwapRouter deployed to:', SwapRouter.target);
 
   const NFTDescriptorFactory = await hre.ethers.getContractFactory('NFTDescriptor');
-  const NFTDescriptor = await NFTDescriptorFactory.deploy();
+  let NFTDescriptor = await NFTDescriptorFactory.deploy();
 
-  await NFTDescriptor.waitForDeployment();
+  NFTDescriptor = await NFTDescriptor.waitForDeployment();
   // arg1 wnative address
   const NonfungibleTokenPositionDescriptorFactory = await hre.ethers.getContractFactory(
     'NonfungibleTokenPositionDescriptor',
@@ -65,21 +65,21 @@ async function main() {
       },
     }
   );
-  const NonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptorFactory.deploy(
+  let NonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptorFactory.deploy(
     WNativeTokenAddress,
     'WTLS',
     []
   );
 
-  await NonfungibleTokenPositionDescriptor.waitForDeployment();
+  NonfungibleTokenPositionDescriptor = await NonfungibleTokenPositionDescriptor.waitForDeployment();
 
   console.log('NonfungibleTokenPositionDescriptor deployed to:', NonfungibleTokenPositionDescriptor.target);
 
   //console.log('NFTDescriptor deployed to:', NFTDescriptor.target)
   const ProxyFactory = await hre.ethers.getContractFactory('TransparentUpgradeableProxy');
-  const Proxy = await ProxyFactory.deploy(NonfungibleTokenPositionDescriptor.target, ProxyAdmin, '0x');
+  let Proxy = await ProxyFactory.deploy(NonfungibleTokenPositionDescriptor.target, ProxyAdmin, '0x');
 
-  await Proxy.waitForDeployment();
+  Proxy = await Proxy.waitForDeployment();
 
   deploysData.proxy = Proxy.target;
 
@@ -88,14 +88,14 @@ async function main() {
   // // arg2 wnative address
   // // arg3 tokenDescriptor address
   const NonfungiblePositionManagerFactory = await hre.ethers.getContractFactory('NonfungiblePositionManager');
-  const NonfungiblePositionManager = await NonfungiblePositionManagerFactory.deploy(
+  let NonfungiblePositionManager = await NonfungiblePositionManagerFactory.deploy(
     deploysData.factory,
     WNativeTokenAddress,
     Proxy.target,
     deploysData.poolDeployer
   );
 
-  await NonfungiblePositionManager.waitForDeployment();
+  NonfungiblePositionManager = await NonfungiblePositionManager.waitForDeployment();
 
   deploysData.nonfungiblePositionManager = NonfungiblePositionManager.target;
   console.log('NonfungiblePositionManager deployed to:', NonfungiblePositionManager.target);
@@ -114,9 +114,9 @@ async function main() {
   // await V3Migrator.waitForDeployment();
 
   const AlgebraInterfaceMulticallFactory = await hre.ethers.getContractFactory('AlgebraInterfaceMulticall');
-  const AlgebraInterfaceMulticall = await AlgebraInterfaceMulticallFactory.deploy();
+  let AlgebraInterfaceMulticall = await AlgebraInterfaceMulticallFactory.deploy();
 
-  await AlgebraInterfaceMulticall.waitForDeployment();
+  AlgebraInterfaceMulticall = await AlgebraInterfaceMulticall.waitForDeployment();
 
   console.log('AlgebraInterfaceMulticall deployed to:', AlgebraInterfaceMulticall.target);
   // console.log('V3Migrator deployed to:', V3Migrator.target);

@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@tenderly/hardhat-tenderly": "^2.2.2",
     "hardhat": "^2.19.4"
   }
 }

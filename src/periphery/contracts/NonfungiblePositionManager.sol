@@ -139,48 +139,6 @@ contract NonfungiblePositionManager is
             position.tokensOwed0,
             position.tokensOwed1);
     }
-    
-    function positionsLiquidiity(
-        uint256 tokenId
-    )
-        external
-        view
-        returns (
-            address token0,
-            address token1,
-            uint256 amount0,
-            uint256 amount1
-        )
-    {
-        Position storage position = _positions[tokenId];
-        // single SLOAD
-        uint80 poolId = position.poolId;
-        int24 tickLower = position.tickLower;
-        int24 tickUpper = position.tickUpper;
-        uint128 liquidity = position.liquidity;
-        
-        require(poolId != 0, 'Invalid token ID');
-        PoolAddress.PoolKey storage poolKey = _poolIdToPoolKey[poolId];
-
-        uint160 sqrtRatioAX96 = TickMath.getSqrtRatioAtTick(tickLower);
-        uint160 sqrtRatioBX96 = TickMath.getSqrtRatioAtTick(tickUpper);
-
-        IAlgebraPool pool = IAlgebraPool(_getPoolById(position.poolId));
-        (uint160 sqrtRatioX96,,,,,,) = pool.safelyGetStateOfAMM();
-
-        (uint256 _amount0, uint256 _amount1) = LiquidityAmounts.getAmountsForLiquidity(
-            sqrtRatioX96,
-            sqrtRatioAX96,
-            sqrtRatioBX96,
-            liquidity
-        );
-        return (
-            poolKey.token0,
-            poolKey.token1,
-            _amount0,
-            _amount1
-        );
-    }
 
     /// @inheritdoc INonfungiblePositionManager
     function mint(
