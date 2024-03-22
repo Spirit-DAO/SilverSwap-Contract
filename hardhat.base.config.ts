@@ -28,7 +28,7 @@ export default {
 		accounts: [PRIVATE_KEY],
 	},
 	tenderly: {
-		url: "https://rpc.vnet.tenderly.co/devnet/spirit-v3/62c3849c-97dd-4316-b999-4f846996b5c1",
+		url: "https://rpc.vnet.tenderly.co/devnet/spirit-v3/a4020745-0ed2-431e-be5b-7c5b05b6debd",
 		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
