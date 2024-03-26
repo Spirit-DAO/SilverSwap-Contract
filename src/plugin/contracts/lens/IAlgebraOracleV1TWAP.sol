@@ -27,6 +27,21 @@ interface IAlgebraOracleV1TWAP {
   /// @return isConnected Is oracle currently connected to the pool. If disconnected data can be obsolete
   function getAverageTick(address pool, uint32 period) external view returns (int24 timeWeightedAverageTick, bool isConnected);
 
+  function getActualTimestamp(
+    address pool
+  )
+    external
+    view
+    returns (
+      bool initialized,
+      uint32 blockTimestamp,
+      int56 tickCumulative,
+      uint88 volatilityCumulative,
+      int24 tick,
+      int24 averageTick,
+      uint16 windowStartIndex
+    );
+
   /// @notice Returns the last timestamp written in the oracle
   function latestTimestamp(address pool) external view returns (uint32);
 
