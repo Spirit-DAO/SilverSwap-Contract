@@ -28,13 +28,18 @@ export default {
 		accounts: [PRIVATE_KEY],
 	},
 	tenderly: {
-		url: "https://rpc.vnet.tenderly.co/devnet/spirit-v3/a4020745-0ed2-431e-be5b-7c5b05b6debd",
+		url: "https://rpc.tenderly.co/fork/8518f864-9b22-4755-abf4-f7008a8fc330",
 		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
 	ftmtest: {
 		url: "https://rpc.testnet.fantom.network/",
 		chainId: 4002,
+		accounts: [PRIVATE_KEY],
+	},
+	ftm: {
+		url: "https://rpcapi.fantom.network/",
+		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
     ropsten: {
