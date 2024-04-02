@@ -19,7 +19,16 @@ async function main() {
     await factory.setDefaultPluginFactory(dsFactory.target)
     console.log('Updated plugin factory address in factory')
 
-    deploysData.BasePluginV1Factory = dsFactory.target;
+	deploysData.BasePluginV1Factory = dsFactory.target;
+	
+	const OracleTWAPFactory = await hre.ethers.getContractFactory('AlgebraOracleV1TWAP');
+	const OracleTWAP = await OracleTWAPFactory.deploy(deploysData.BasePluginV1Factory);
+
+	await OracleTWAP.waitForDeployment();
+
+	deploysData.TWAP = OracleTWAP.target;
+    console.log('TWAP Oracle:', OracleTWAP.target);
+
     fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
 
 }
