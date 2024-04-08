@@ -38,7 +38,7 @@ export default {
 		accounts: [PRIVATE_KEY],
 	},
 	ftm: {
-		url: "https://rpcapi.fantom.network/",
+		url: "https://rpc.fantom.network",
 		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},

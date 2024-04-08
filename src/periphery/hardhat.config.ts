@@ -6,7 +6,7 @@ import * as tdly from '@tenderly/hardhat-tenderly';
 import baseConfig from '../../hardhat.base.config';
 import { task } from 'hardhat/config';
 
-tdly.setup();
+tdly.setup({ automaticVerifications: false });
 const LOW_OPTIMIZER_COMPILER_SETTINGS = {
   version: '0.8.20',
   settings: {

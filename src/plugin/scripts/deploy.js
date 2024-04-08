@@ -7,7 +7,7 @@ async function main() {
     const deployDataPath = path.resolve(__dirname, '../../../deploys.json')
     const deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'))
 
-    const BasePluginV1Factory = await hre.ethers.getContractFactory("BasePluginV1Factory");
+/*     const BasePluginV1Factory = await hre.ethers.getContractFactory("BasePluginV1Factory");
     const dsFactory = await BasePluginV1Factory.deploy(deploysData.factory);
 
     await dsFactory.waitForDeployment()
@@ -27,7 +27,15 @@ async function main() {
 	await OracleTWAP.waitForDeployment();
 
 	deploysData.TWAP = OracleTWAP.target;
-    console.log('TWAP Oracle:', OracleTWAP.target);
+	console.log('TWAP Oracle:', OracleTWAP.target); */
+	
+	const StateMulticallFactory = await hre.ethers.getContractFactory('AlgebraStateMulticall');
+	const StateMulticall = await StateMulticallFactory.deploy(deploysData.TWAP);
+
+	await StateMulticall.waitForDeployment();
+
+	deploysData.StateMulticall = StateMulticall.target;
+	console.log('StateMulticall:', StateMulticall.target);
 
     fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
 

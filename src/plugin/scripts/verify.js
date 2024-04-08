@@ -8,11 +8,27 @@ async function main() {
     let deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'));
 
     const BasePluginV1Factory = deploysData.BasePluginV1Factory;
+    const OracleTWAPFactory = deploysData.BasePluginV1Factory;
+    const AlgebraStateMulticall = deploysData.StateMulticall;
 
     await hre.run("verify:verify", {
         address: BasePluginV1Factory,
         constructorArguments: [
             deploysData.factory
+        ],
+	});
+	
+	await hre.run("verify:verify", {
+        address: OracleTWAPFactory,
+        constructorArguments: [
+            BasePluginV1Factory
+        ],
+	});
+	
+	await hre.run("verify:verify", {
+        address: AlgebraStateMulticall,
+        constructorArguments: [
+            OracleTWAPFactory
         ],
         });
     
