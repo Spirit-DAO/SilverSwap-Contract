@@ -91,6 +91,13 @@ contract SwapRouter is
 
         bool zeroToOne = tokenIn < tokenOut;
 
+		if (tokenOut == address(0) && tokenIn == WNativeToken && recipient != address(this)) {
+			// swap from WNativeToken to token
+			IWNativeToken(WNativeToken).withdraw(amountIn);
+			TransferHelper.safeTransferNative(recipient, amountIn);
+			return amountIn;
+		}
+
         (int256 amount0, int256 amount1) = getPool(tokenIn, tokenOut).swap(
             recipient,
             zeroToOne,
