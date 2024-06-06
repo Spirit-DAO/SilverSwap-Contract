@@ -8,7 +8,7 @@ async function main() {
   let deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'));
 
   const LiquidityLockerFactory = await hre.ethers.getContractFactory('LiquidityLocker');
-  const LiquidityLocker = await LiquidityLockerFactory.deploy(deploysData.swapRouter, '0x68Edf2cecbAf0bfcC9db032A1422F99196A50aBc', '0x68Edf2cecbAf0bfcC9db032A1422F99196A50aBc', '0x68Edf2cecbAf0bfcC9db032A1422F99196A50aBc');
+  const LiquidityLocker = await LiquidityLockerFactory.deploy(deploysData.swapRouter, '0x68Edf2cecbAf0bfcC9db032A1422F99196A50aBc', '0x68Edf2cecbAf0bfcC9db032A1422F99196A50aBc');
 
   await LiquidityLocker.waitForDeployment();
 
