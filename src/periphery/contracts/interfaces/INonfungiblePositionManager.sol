@@ -23,6 +23,20 @@ interface INonfungiblePositionManager is
     IERC721Enumerable,
     IERC721Permit
 {
+
+	struct Position {
+        uint88 nonce; // the nonce for permits
+        address operator; // the address that is approved for spending this token
+        uint80 poolId; // the ID of the pool with which this token is connected
+        int24 tickLower; // the tick range of the position
+        int24 tickUpper;
+        uint128 liquidity; // the liquidity of the position
+        uint256 feeGrowthInside0LastX128; // the fee growth of the aggregate position as of the last action on the individual position
+        uint256 feeGrowthInside1LastX128;
+        uint128 tokensOwed0; // how many uncollected tokens are owed to the position, as of the last computation
+        uint128 tokensOwed1;
+    }
+
     /// @notice Emitted when liquidity is increased for a position NFT
     /// @dev Also emitted when a token is minted
     /// @param tokenId The ID of the token for which liquidity was increased

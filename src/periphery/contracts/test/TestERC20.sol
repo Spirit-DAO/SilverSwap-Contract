@@ -7,6 +7,9 @@ import '@openzeppelin/contracts/token/ERC20/extensions/draft-ERC20Permit.sol';
 contract TestERC20 is ERC20Permit {
     uint256 fee;
 
+	function decimals() public pure override returns (uint8) {
+        return 6;
+    }
     constructor(uint256 amountToMint) ERC20('USDC', 'USDC') ERC20Permit('USDC') {
         _mint(msg.sender, amountToMint);
     }

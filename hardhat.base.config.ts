@@ -28,7 +28,7 @@ export default {
 		accounts: [PRIVATE_KEY],
 	},
 	tenderly: {
-		url: "https://rpc.vnet.tenderly.co/devnet/ewrwr/f7caaa19-69eb-4f77-9015-c4f91bd20aa0",
+		url: "https://rpc.tenderly.co/fork/8518f864-9b22-4755-abf4-f7008a8fc330",
 		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
@@ -40,6 +40,11 @@ export default {
 	ftmtest: {
 		url: "https://rpc.testnet.fantom.network/",
 		chainId: 4002,
+		accounts: [PRIVATE_KEY],
+	},
+	ftm: {
+		url: "https://rpc.fantom.network",
+		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
     ropsten: {

@@ -36,20 +36,6 @@ contract NonfungiblePositionManager is
 {
     using PoolInteraction for IAlgebraPool;
 
-    // details about the Algebra position
-    struct Position {
-        uint88 nonce; // the nonce for permits
-        address operator; // the address that is approved for spending this token
-        uint80 poolId; // the ID of the pool with which this token is connected
-        int24 tickLower; // the tick range of the position
-        int24 tickUpper;
-        uint128 liquidity; // the liquidity of the position
-        uint256 feeGrowthInside0LastX128; // the fee growth of the aggregate position as of the last action on the individual position
-        uint256 feeGrowthInside1LastX128;
-        uint128 tokensOwed0; // how many uncollected tokens are owed to the position, as of the last computation
-        uint128 tokensOwed1;
-    }
-
     /// @dev The role which has the right to change the farming center address
     bytes32 public constant NONFUNGIBLE_POSITION_MANAGER_ADMINISTRATOR_ROLE =
         keccak256('NONFUNGIBLE_POSITION_MANAGER_ADMINISTRATOR_ROLE');
@@ -91,7 +77,7 @@ contract NonfungiblePositionManager is
         address _tokenDescriptor_,
         address _poolDeployer
     )
-        ERC721Permit('Algebra Positions NFT-V2', 'ALGB-POS', '2')
+        ERC721Permit('Spirit Positions NFT-V2', 'SPIRIT-POS', '3')
         PeripheryImmutableState(_factory, _WNativeToken, _poolDeployer)
     {
         _tokenDescriptor = _tokenDescriptor_;

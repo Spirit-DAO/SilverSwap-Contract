@@ -6,7 +6,7 @@ import 'hardhat-deploy';
 import * as tdly from '@tenderly/hardhat-tenderly';
 import { SolcUserConfig } from 'hardhat/types';
 import baseConfig from '../../hardhat.base.config';
-tdly.setup();
+tdly.setup({ automaticVerifications: false });
 
 const HIGHEST_OPTIMIZER_COMPILER_SETTINGS: SolcUserConfig = {
   version: '0.8.20',

@@ -18,7 +18,13 @@ async function main() {
 
     await factory.setDefaultPluginFactory(dsFactory.target)
     console.log('Updated plugin factory address in factory')
-
+    
+    const StateMulticallFactory = await hre.ethers.getContractFactory('AlgebraStateMulticall');
+	const StateMulticall = await StateMulticallFactory.deploy(deploysData.TWAP);
+	await StateMulticall.waitForDeployment();
+	deploysData.StateMulticall = StateMulticall.target;
+	console.log('StateMulticall:', StateMulticall.target);
+    
     deploysData.BasePluginV1Factory = dsFactory.target;
     
     const AlgebraOracleV1TWAP = await hre.ethers.getContractFactory("AlgebraOracleV1TWAP");

@@ -42,6 +42,27 @@ contract AlgebraOracleV1TWAP is IAlgebraOracleV1TWAP {
   }
 
   /// @inheritdoc IAlgebraOracleV1TWAP
+  function getActualTimestamp(
+    address pool
+  )
+    external
+	override
+    view
+    returns (
+      bool initialized,
+      uint32 blockTimestamp,
+      int56 tickCumulative,
+      uint88 volatilityCumulative,
+      int24 tick,
+      int24 averageTick,
+      uint16 windowStartIndex
+    )
+  {
+    IVolatilityOracle oracle = IVolatilityOracle(_getPluginForPool(pool));
+    return oracle.timepoints(oracle.timepointIndex());
+  }
+
+  /// @inheritdoc IAlgebraOracleV1TWAP
   function oldestTimestamp(address pool) external view override returns (uint32 _oldestTimestamp) {
     address oracle = _getPluginForPool(pool);
     (, _oldestTimestamp) = OracleLibrary.oldestTimepointMetadata(oracle);
