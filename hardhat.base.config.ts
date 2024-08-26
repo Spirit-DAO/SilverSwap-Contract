@@ -28,7 +28,12 @@ export default {
 		accounts: [PRIVATE_KEY],
 	},
 	tenderly: {
-		url: "https://rpc.vnet.tenderly.co/devnet/spirit-v3/a4020745-0ed2-431e-be5b-7c5b05b6debd",
+		url: "https://rpc.vnet.tenderly.co/devnet/ewrwr/f7caaa19-69eb-4f77-9015-c4f91bd20aa0",
+		chainId: 250,
+		accounts: [PRIVATE_KEY],
+	},
+	ftm: {
+		url: "https://rpc.ftm.tools",
 		chainId: 250,
 		accounts: [PRIVATE_KEY],
 	},
@@ -92,6 +97,11 @@ export default {
       chainId: 168587773,
       accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
+    telos: {
+      url: `https://rpc3.us.telos.net/evm`,
+      chainId: 40,
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+    },
     telosTestnet: {
       url: `https://testnet.telos.net/evm`,
       chainId: 41,
@@ -113,55 +123,70 @@ export default {
       chainId: 10243,
       accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
-  },
-  etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-  	apiKey: {
-		opera: FTMSCAN_API_KEY,
-		ftmTestnet: FTMSCAN_API_KEY,
-  	},
-    customChains: [
-      {
-        network: 'seiTestnet',
-        chainId: 713715,
-        urls: {
-          apiURL: 'https://seitrace.com/api',
-          browserURL: 'https://seitrace.com/',
+    },
+    sourcify: {
+        // Disabled by default
+        // Doesn't need an API key
+        enabled: true,
+    },
+    etherscan: {
+        enabled: false,
+        // Your API key for Etherscan
+        // Obtain one at https://etherscan.io/
+        apiKey: {
+            opera: FTMSCAN_API_KEY,
+            ftmTestnet: FTMSCAN_API_KEY,
+            telosTestnet: FTMSCAN_API_KEY,
         },
-      },
-      {
-        network: 'mode',
-        chainId: 34443,
-        urls: {
-          apiURL: 'https://explorer.mode.network/api',
-          browserURL: 'https://explorer.mode.network/',
+        customChains: [
+        {
+            network: 'seiTestnet',
+            chainId: 713715,
+            urls: {
+            apiURL: 'https://seitrace.com/api',
+            browserURL: 'https://seitrace.com/',
+            },
         },
-      },
-      {
-        network: 'blastTestnet',
-        chainId: 168587773,
-        urls: {
-          apiURL: 'https://api-sepolia.blastscan.io/api',
-          browserURL: 'https://sepolia.blastscan.io/',
+        {
+            network: 'mode',
+            chainId: 34443,
+            urls: {
+            apiURL: 'https://explorer.mode.network/api',
+            browserURL: 'https://explorer.mode.network/',
+            },
         },
-      },
-      {
-        network: 'mantle',
-        chainId: 5000,
-        urls: {
-          apiURL: 'https://explorer.mantle.xyz/api',
-          browserURL: 'https://explorer.mantle.xyz/',
+        {
+            network: 'blastTestnet',
+            chainId: 168587773,
+            urls: {
+            apiURL: 'https://api-sepolia.blastscan.io/api',
+            browserURL: 'https://sepolia.blastscan.io/',
+            },
         },
-      },
-      {
-        network: 'beraTestnet',
-        chainId: 80085,
-        urls: {
-          apiURL: 'https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/',
-          browserURL: 'https://artio.beratrail.io/',
+        {
+            network: 'mantle',
+            chainId: 5000,
+            urls: {
+            apiURL: 'https://explorer.mantle.xyz/api',
+            browserURL: 'https://explorer.mantle.xyz/',
+            },
         },
-      },
-    ],
-  },
+        {
+            network: 'beraTestnet',
+            chainId: 80085,
+            urls: {
+            apiURL: 'https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/',
+            browserURL: 'https://artio.beratrail.io/',
+            },
+        },
+        {
+            network: 'telosTestnet',
+            chainId: 41,
+            urls: {
+                apiURL: 'https://sourcify.dev/server',
+                browserURL: 'https://telos.net/',
+            }
+        },
+        ],
+    },
 };

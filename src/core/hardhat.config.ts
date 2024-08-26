@@ -2,6 +2,7 @@ import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-contract-sizer';
 import 'hardhat-output-validator';
 import 'solidity-docgen';
+import 'hardhat-deploy';
 import * as tdly from '@tenderly/hardhat-tenderly';
 import { SolcUserConfig } from 'hardhat/types';
 import baseConfig from '../../hardhat.base.config';
@@ -70,6 +71,7 @@ if (process.env.RUN_COVERAGE == '1') {
 export default {
   networks: baseConfig.networks,
   etherscan: baseConfig.etherscan,
+  sourcify: baseConfig.sourcify,
   typechain: {
     outDir: 'typechain',
 	},

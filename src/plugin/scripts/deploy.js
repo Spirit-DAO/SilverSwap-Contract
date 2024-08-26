@@ -20,8 +20,16 @@ async function main() {
     console.log('Updated plugin factory address in factory')
 
     deploysData.BasePluginV1Factory = dsFactory.target;
-    fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
+    
+    const AlgebraOracleV1TWAP = await hre.ethers.getContractFactory("AlgebraOracleV1TWAP");
+    const oracle = await AlgebraOracleV1TWAP.deploy(deploysData.BasePluginV1Factory);
+    
+    await oracle.waitForDeployment()
+    
+    console.log("TWAP to:", oracle.target);
+    deploysData.TWAP = oracle.target;
 
+    fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
 }
 
 // We recommend this pattern to be able to use async/await everywhere
