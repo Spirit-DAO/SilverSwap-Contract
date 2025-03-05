@@ -41,6 +41,26 @@ export default {
       chainId: 4002,
       accounts: [PRIVATE_KEY],
 	},
+	sonic: {
+		url: "https://rpc.sonic.fantom.network/",
+		chainId: 64165,
+		accounts: [PRIVATE_KEY],
+	},
+	tenderly: {
+		url: "https://rpc.tenderly.co/fork/8518f864-9b22-4755-abf4-f7008a8fc330",
+		chainId: 250,
+		accounts: [PRIVATE_KEY],
+	},
+	ftm: {
+		url: "https://rpc.ftm.tools",
+		chainId: 250,
+		accounts: [PRIVATE_KEY],
+	},
+	ftmtest: {
+		url: "https://rpc.testnet.fantom.network/",
+		chainId: 4002,
+		accounts: [PRIVATE_KEY],
+	},
 	ftm: {
 		url: 'https://rpc.fantom.network',
 		chainId: 250,
@@ -106,6 +126,11 @@ export default {
       chainId: 168587773,
       accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
+    telos: {
+      url: `https://rpc3.us.telos.net/evm`,
+      chainId: 40,
+      accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
+    },
     telosTestnet: {
       url: `https://testnet.telos.net/evm`,
       chainId: 41,
@@ -127,80 +152,70 @@ export default {
       chainId: 10243,
       accounts: [`0x${PRIVATE_KEY || '1000000000000000000000000000000000000000000000000000000000000000'}`],
     },
-  },
-  etherscan: {
-    // Your API key for Etherscan
-    // Obtain one at https://etherscan.io/
-    apiKey: {
-		opera: FTMSCAN_API_KEY,
-		ftmTestnet: FTMSCAN_API_KEY,
-		sonic: "68NBTJ3FHQ5RMXV43SB4GP2U8SPV84PG2N",
-		sonicBlaze: "68NBTJ3FHQ5RMXV43SB4GP2U8SPV84PG2N",
-		nibiruTestnet: "68NBTJ3FHQ5RMXV43SB4GP2U8SPV84PG2N",
     },
-	customChains: [
-		{
-			network: "sonic",
-			chainId: 146,
-			urls: {
-			  apiURL: "https://api.sonicscan.org/api",
-			  browserURL: "https://sonicscan.org"
-			}
-		},{
-			network: "sonicBlaze",
-			chainId: 57054,
-			urls: {
-			  apiURL: "https://api-testnet.sonicscan.org/api",
-			  browserURL: "https://testnet.sonicscan.org"
-			}
-		}, {
-			network: "nibiruTestnet",
-			chainId: 7210,
-			urls: {
-			apiURL: "https://api.routescan.io/v2/network/testnet/evm/7210/etherscan",
-			browserURL: "https://evm_explorer.testnet-1.nibiru.fi"
-			}
-		},
-		{
-			network: 'seiTestnet',
-			chainId: 713715,
-			urls: {
-			apiURL: 'https://seitrace.com/api',
-			browserURL: 'https://seitrace.com/',
-			},
-		},
-		{
-			network: 'mode',
-			chainId: 34443,
-			urls: {
-			apiURL: 'https://explorer.mode.network/api',
-			browserURL: 'https://explorer.mode.network/',
-			},
-		},
-		{
-			network: 'blastTestnet',
-			chainId: 168587773,
-			urls: {
-			apiURL: 'https://api-sepolia.blastscan.io/api',
-			browserURL: 'https://sepolia.blastscan.io/',
-			},
-		},
-		{
-			network: 'mantle',
-			chainId: 5000,
-			urls: {
-			apiURL: 'https://explorer.mantle.xyz/api',
-			browserURL: 'https://explorer.mantle.xyz/',
-			},
-		},
-		{
-			network: 'beraTestnet',
-			chainId: 80085,
-			urls: {
-			apiURL: 'https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/',
-			browserURL: 'https://artio.beratrail.io/',
-			},
-		},
-    ],
-  },
+    sourcify: {
+        // Disabled by default
+        // Doesn't need an API key
+        enabled: true,
+    },
+    etherscan: {
+        enabled: false,
+        // Your API key for Etherscan
+        // Obtain one at https://etherscan.io/
+        apiKey: {
+            opera: FTMSCAN_API_KEY,
+            ftmTestnet: FTMSCAN_API_KEY,
+            telosTestnet: FTMSCAN_API_KEY,
+        },
+        customChains: [
+        {
+            network: 'seiTestnet',
+            chainId: 713715,
+            urls: {
+            apiURL: 'https://seitrace.com/api',
+            browserURL: 'https://seitrace.com/',
+            },
+        },
+        {
+            network: 'mode',
+            chainId: 34443,
+            urls: {
+            apiURL: 'https://explorer.mode.network/api',
+            browserURL: 'https://explorer.mode.network/',
+            },
+        },
+        {
+            network: 'blastTestnet',
+            chainId: 168587773,
+            urls: {
+            apiURL: 'https://api-sepolia.blastscan.io/api',
+            browserURL: 'https://sepolia.blastscan.io/',
+            },
+        },
+        {
+            network: 'mantle',
+            chainId: 5000,
+            urls: {
+            apiURL: 'https://explorer.mantle.xyz/api',
+            browserURL: 'https://explorer.mantle.xyz/',
+            },
+        },
+        {
+            network: 'beraTestnet',
+            chainId: 80085,
+            urls: {
+            apiURL: 'https://api.routescan.io/v2/network/testnet/evm/80085/etherscan/api/',
+            browserURL: 'https://artio.beratrail.io/',
+            },
+        },
+        {
+            network: 'telosTestnet',
+            chainId: 41,
+            urls: {
+                apiURL: 'https://sourcify.dev/server',
+                browserURL: 'https://telos.net/',
+            }
+        },
+        ],
+    },
 };

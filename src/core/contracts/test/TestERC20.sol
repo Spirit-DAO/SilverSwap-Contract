@@ -8,9 +8,9 @@ contract TestERC20 is IERC20Minimal {
   mapping(address => uint256) public override balanceOf;
   mapping(address => mapping(address => uint256)) public override allowance;
 
-  string public constant name = 'USDC';
-  string public constant symbol = 'USDC';
-  uint8 public constant decimals = 6;
+  string public constant name = 'TEST Coin';
+  string public constant symbol = 'TST';
+  uint8 public constant decimals = 18;
 
   constructor(uint256 amountToMint) {
     mint(msg.sender, amountToMint);

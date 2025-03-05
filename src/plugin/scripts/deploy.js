@@ -12,32 +12,28 @@ async function main() {
     await dsFactory.waitForDeployment()
 
     console.log("PluginFactory to:", dsFactory.target);
+    deploysData.BasePluginV1Factory = dsFactory.target;
 
     const factory = await hre.ethers.getContractAt('IAlgebraFactory', deploysData.factory)
 
     await factory.setDefaultPluginFactory(dsFactory.target)
-	console.log('Updated plugin factory address in factory')
-
-	deploysData.BasePluginV1Factory = dsFactory.target;
-
-	const OracleTWAPFactory = await hre.ethers.getContractFactory('AlgebraOracleV1TWAP');
-	const OracleTWAP = await OracleTWAPFactory.deploy(deploysData.BasePluginV1Factory);
-
-	await OracleTWAP.waitForDeployment();
-
-	deploysData.TWAP = OracleTWAP.target;
-	console.log('TWAP Oracle:', OracleTWAP.target);
-	
-	const StateMulticallFactory = await hre.ethers.getContractFactory('AlgebraStateMulticall');
+    console.log('Updated plugin factory address in factory')
+    
+    const AlgebraOracleV1TWAP = await hre.ethers.getContractFactory("AlgebraOracleV1TWAP");
+    const oracle = await AlgebraOracleV1TWAP.deploy(deploysData.BasePluginV1Factory);
+    
+    await oracle.waitForDeployment()
+    
+    console.log("TWAP to:", oracle.target);
+    deploysData.TWAP = oracle.target;
+    
+    const StateMulticallFactory = await hre.ethers.getContractFactory('AlgebraStateMulticall');
 	const StateMulticall = await StateMulticallFactory.deploy(deploysData.TWAP);
-
 	await StateMulticall.waitForDeployment();
-
 	deploysData.StateMulticall = StateMulticall.target;
 	console.log('StateMulticall:', StateMulticall.target);
 
     fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere

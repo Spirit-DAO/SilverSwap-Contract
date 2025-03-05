@@ -26,6 +26,7 @@ const DEFAULT_COMPILER_SETTINGS: SolcUserConfig = {
 const config: HardhatUserConfig = {
   networks: baseConfig.networks,
   etherscan: baseConfig.etherscan,
+  sourcify: baseConfig.sourcify,
   solidity: {
     compilers: [DEFAULT_COMPILER_SETTINGS],
   },
