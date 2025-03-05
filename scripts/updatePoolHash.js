@@ -6,7 +6,9 @@ const execSync = require('child_process').execSync;
 function updateHash(pathToPool, files) {
     const contract = JSON.parse(fs.readFileSync(path.resolve(__dirname, pathToPool), 'utf8'));
 
-    const COMPUTED_INIT_CODE_HASH = keccak256(['bytes'], [`${contract["bytecode"]}`])
+	const COMPUTED_INIT_CODE_HASH = keccak256(['bytes'], [`${contract["bytecode"]}`])
+	
+	console.log(COMPUTED_INIT_CODE_HASH)
 
     for (let file of files) {
         let getAddress = fs.readFileSync(path.resolve(__dirname, file), 'utf8');

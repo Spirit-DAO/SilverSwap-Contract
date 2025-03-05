@@ -8,7 +8,7 @@ async function main() {
   let deploysData = JSON.parse(fs.readFileSync(deployDataPath, 'utf8'));
 
   // WNativeTokenAddress
-  const WNativeTokenAddress = '0x5002477fda4A92E3165B52d635bD24a0dc1716a6';
+  const WNativeTokenAddress = '0x7D4B7B8CA7E1a24928Bb96D59249c7a5bd1DfBe6';
   const signers = await hre.ethers.getSigners();
   const ProxyAdmin = signers[0].address;
 
@@ -119,7 +119,8 @@ async function main() {
   AlgebraInterfaceMulticall = await AlgebraInterfaceMulticall.waitForDeployment();
 
   console.log('AlgebraInterfaceMulticall deployed to:', AlgebraInterfaceMulticall.target);
-  // console.log('V3Migrator deployed to:', V3Migrator.target);
+	// console.log('V3Migrator deployed to:', V3Migrator.target);
+  deploysData.algebraInterfaceMulticall = AlgebraInterfaceMulticall.target;
 
   fs.writeFileSync(deployDataPath, JSON.stringify(deploysData), 'utf-8');
 }
