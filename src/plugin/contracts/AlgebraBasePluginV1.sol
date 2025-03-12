@@ -30,7 +30,7 @@ contract AlgebraBasePluginV1 is IAlgebraBasePluginV1, Timestamp, IAlgebraPlugin 
   bytes32 public constant ALGEBRA_BASE_PLUGIN_MANAGER = keccak256('ALGEBRA_BASE_PLUGIN_MANAGER');
 
   /// @inheritdoc IAlgebraPlugin
-  uint8 public constant override defaultPluginConfig = uint8(Plugins.AFTER_INIT_FLAG | Plugins.BEFORE_SWAP_FLAG | Plugins.DYNAMIC_FEE);
+  uint8 public constant override defaultPluginConfig = uint8(Plugins.AFTER_INIT_FLAG | Plugins.BEFORE_SWAP_FLAG | Plugins.BEFORE_POSITION_MODIFY_FLAG | Plugins.DYNAMIC_FEE);
 
   /// @inheritdoc IFarmingPlugin
   address public immutable override pool;
@@ -241,9 +241,17 @@ contract AlgebraBasePluginV1 is IAlgebraBasePluginV1, Timestamp, IAlgebraPlugin 
     return IAlgebraPlugin.afterInitialize.selector;
   }
 
-  /// @dev unused
-  function beforeModifyPosition(address, address, int24, int24, int128, bytes calldata) external override onlyPool returns (bytes4) {
-    _updatePluginConfigInPool(); // should not be called, reset config
+  bool public forceFullRange = true;
+
+  function setForceFullRange(bool _forceFullRange) external {
+	require(msg.sender == pluginFactory || IAlgebraFactory(factory).hasRoleOrOwner(ALGEBRA_BASE_PLUGIN_MANAGER, msg.sender));
+    forceFullRange = _forceFullRange;
+  }
+
+  function beforeModifyPosition(address, address, int24 tickLower, int24 tickUpper, int128, bytes calldata) external override onlyPool returns (bytes4) {
+    if (forceFullRange) {
+      require(tickLower == -887272 && tickUpper == 887272, 'Invalid tick range');
+    }
     return IAlgebraPlugin.beforeModifyPosition.selector;
   }
 
